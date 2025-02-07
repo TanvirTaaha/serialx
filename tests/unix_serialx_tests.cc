@@ -1,8 +1,8 @@
-/* To run these tests you need to change the define below to the serial port 
+/* To run these tests you need to change the define below to the serial port
  * with a loop back device attached.
- * 
+ *
  * Alternatively you could use an Arduino:
- 
+
 void setup()
 {
  Serial.begin(115200);
@@ -14,12 +14,13 @@ void loop()
    Serial.write(Serial.read());
  }
 }
- 
+
 */
 
 #include <string>
-#include "gtest/gtest.h"
 
+#include "gtest/gtest.h"
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS  // added to suppress warning
 #include <boost/bind.hpp>
 
 // Use FRIEND_TEST... its not as nasty, thats what friends are for
@@ -42,7 +43,7 @@ using std::string;
 namespace {
 
 class SerialXTests : public ::testing::Test {
-protected:
+ protected:
   virtual void SetUp() {
     if (openpty(&master_fd, &slave_fd, name, NULL, NULL) == -1) {
       perror("openpty");
@@ -61,7 +62,7 @@ protected:
     delete port1;
   }
 
-  SerialX * port1;
+  SerialX *port1;
   int master_fd;
   int slave_fd;
   char name[100];
@@ -84,7 +85,7 @@ TEST_F(SerialXTests, timeoutWorks) {
   // Timeout a read, returns an empty string
   string empty = port1->read();
   EXPECT_EQ(empty, string(""));
-  
+
   // Ensure that writing/reading still works after a timeout.
   write(master_fd, "abc\n", 4);
   string r = port1->read(4);
@@ -98,7 +99,7 @@ TEST_F(SerialXTests, partialRead) {
   // Should timeout, but return what was in the buffer.
   string empty = port1->read(10);
   EXPECT_EQ(empty, string("abc\n"));
-  
+
   // Ensure that writing/reading still works after a timeout.
   write(master_fd, "abc\n", 4);
   string r = port1->read(4);
