@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(serial)
+project(serialx)
 
 # Find ament_cmake
 find_package(ament_cmake REQUIRED)
@@ -10,27 +10,27 @@ if(APPLE)
 endif()
 
 ## Sources
-set(serial_SRCS
-    src/serial.cc
-    include/serial/serial.h
-    include/serial/v8stdint.h
+set(serialx_SRCS
+    src/serialx.cc
+    include/serialx/serialx.h
+    include/serialx/v8stdint.h
 )
 if(APPLE)
     # If OSX
-    list(APPEND serial_SRCS src/impl/unix.cc)
-    list(APPEND serial_SRCS src/impl/list_ports/list_ports_osx.cc)
+    list(APPEND serialx_SRCS src/impl/unix.cc)
+    list(APPEND serialx_SRCS src/impl/list_ports/list_ports_osx.cc)
 elseif(UNIX)
     # If unix
-    list(APPEND serial_SRCS src/impl/unix.cc)
-    list(APPEND serial_SRCS src/impl/list_ports/list_ports_linux.cc)
+    list(APPEND serialx_SRCS src/impl/unix.cc)
+    list(APPEND serialx_SRCS src/impl/list_ports/list_ports_linux.cc)
 else()
     # If windows
-    list(APPEND serial_SRCS src/impl/win.cc)
-    list(APPEND serial_SRCS src/impl/list_ports/list_ports_win.cc)
+    list(APPEND serialx_SRCS src/impl/win.cc)
+    list(APPEND serialx_SRCS src/impl/list_ports/list_ports_win.cc)
 endif()
 
 ## Add serial library
-add_library(${PROJECT_NAME} ${serial_SRCS})
+add_library(${PROJECT_NAME} ${serialx_SRCS})
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} ${FOUNDATION_LIBRARY} ${IOKIT_LIBRARY})
 elseif(UNIX)
@@ -42,9 +42,9 @@ endif()
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 ## Uncomment for example
-add_executable(serial_example examples/serial_example.cc)
-add_dependencies(serial_example ${PROJECT_NAME})
-target_link_libraries(serial_example ${PROJECT_NAME})
+add_executable(serialx_example examples/serialx_example.cc)
+add_dependencies(serialx_example ${PROJECT_NAME})
+target_link_libraries(serialx_example ${PROJECT_NAME})
 
 ## Include headers
 include_directories(include)
@@ -56,8 +56,8 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 ## Install headers
-install(FILES include/serial/serial.h include/serial/v8stdint.h
-  DESTINATION include/serial)
+install(FILES include/serialx/serialx.h include/serialx/v8stdint.h
+  DESTINATION include/serialx)
 
 ## Tests
 if(BUILD_TESTING)

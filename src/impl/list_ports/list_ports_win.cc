@@ -7,7 +7,7 @@
  * http://opensource.org/licenses/MIT
  */
 
-#include "serial/serial.h"
+#include "serialx/serialx.h"
 #include <tchar.h>
 #include <windows.h>
 #include <setupapi.h>
@@ -15,7 +15,7 @@
 #include <devguid.h>
 #include <cstring>
 
-using serial::PortInfo;
+using serialx::PortInfo;
 using std::vector;
 using std::string;
 
@@ -33,7 +33,7 @@ std::string utf8_encode(const std::wstring &wstr)
 }
 
 vector<PortInfo>
-serial::list_ports()
+serialx::list_ports()
 {
 	vector<PortInfo> devices_found;
 

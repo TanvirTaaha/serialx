@@ -1,5 +1,5 @@
 /*!
- * \file serial/impl/unix.h
+ * \file serialx/impl/unix.h
  * \author  William Woodall <wjwwood@gmail.com>
  * \author  John Harrison <ash@greaterthaninfinity.com>
  * \version 0.1
@@ -30,7 +30,7 @@
  *
  * \section DESCRIPTION
  *
- * This provides a unix based pimpl for the Serial class. This implementation is
+ * This provides a unix based pimpl for the SerialX class. This implementation is
  * based off termios.h and uses select for multiplexing the IO ports.
  *
  */
@@ -40,18 +40,18 @@
 #ifndef SERIAL_IMPL_UNIX_H
 #define SERIAL_IMPL_UNIX_H
 
-#include "serial/serial.h"
+#include "serialx/serialx.h"
 
 #include <pthread.h>
 
-namespace serial {
+namespace serialx {
 
 using std::size_t;
 using std::string;
 using std::invalid_argument;
 
-using serial::SerialException;
-using serial::IOException;
+using serialx::SerialXException;
+using serialx::IOException;
 
 class MillisecondTimer {
 public:
@@ -63,16 +63,16 @@ private:
   timespec expiry;
 };
 
-class serial::Serial::SerialImpl {
+class serialx::SerialX::SerialXImpl {
 public:
-  SerialImpl (const string &port,
+  SerialXImpl (const string &port,
               unsigned long baudrate,
               bytesize_t bytesize,
               parity_t parity,
               stopbits_t stopbits,
               flowcontrol_t flowcontrol);
 
-  virtual ~SerialImpl ();
+  virtual ~SerialXImpl ();
 
   void
   open ();

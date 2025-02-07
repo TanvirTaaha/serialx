@@ -27,7 +27,7 @@
 #include <unistd.h>
 #endif
 
-#include "serial/serial.h"
+#include "serialx/serialx.h"
 
 using std::string;
 using std::exception;
@@ -46,13 +46,13 @@ void my_sleep(unsigned long milliseconds) {
 
 void enumerate_ports()
 {
-	vector<serial::PortInfo> devices_found = serial::list_ports();
+	vector<serialx::PortInfo> devices_found = serialx::list_ports();
 
-	vector<serial::PortInfo>::iterator iter = devices_found.begin();
+	vector<serialx::PortInfo>::iterator iter = devices_found.begin();
 
 	while( iter != devices_found.end() )
 	{
-		serial::PortInfo device = *iter++;
+		serialx::PortInfo device = *iter++;
 
 		printf( "(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(),
      device.hardware_id.c_str() );
@@ -93,7 +93,7 @@ int run(int argc, char **argv)
 #endif
 
   // port, baudrate, timeout in milliseconds
-  serial::Serial my_serial(port, baud, serial::Timeout::simpleTimeout(1000));
+  serialx::SerialX my_serial(port, baud, serialx::Timeout::simpleTimeout(1000));
 
   cout << "Is the serial port open?";
   if(my_serial.isOpen())
@@ -125,7 +125,7 @@ int run(int argc, char **argv)
   }
 
   // Test the timeout at 250ms
-  my_serial.setTimeout(serial::Timeout::max(), 250, 0, 250, 0);
+  my_serial.setTimeout(serialx::Timeout::max(), 250, 0, 250, 0);
   count = 0;
   cout << "Timeout == 250ms, asking for 1 more byte than written." << endl;
   while (count < 10) {

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package>
-  <name>serial</name>
+  <name>serialx</name>
   <version>1.2.1</version>
   <description>
-    Serial is a cross-platform, simple to use library for using serial ports on computers.
+    SerialX is a cross-platform, simple to use library for using serial ports on computers.
     This library provides a C++, object oriented interface for interacting with RS-232
     like devices on Linux and Windows.
   </description>

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\serial.cc">
+    <ClCompile Include="..\..\src\serialx.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\impl\win.cc">
@@ -26,13 +26,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\serial\serial.h">
+    <ClInclude Include="..\..\include\serialx\serialx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\serial\v8stdint.h">
+    <ClInclude Include="..\..\include\serialx\v8stdint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\serial\impl\win.h">
+    <ClInclude Include="..\..\include\serialx\impl\win.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

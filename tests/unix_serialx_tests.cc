@@ -27,7 +27,7 @@ void loop()
 // #define private public
 // #define protected public
 
-#include "serial/serial.h"
+#include "serialx/serialx.h"
 
 #if defined(__linux__)
 #include <pty.h>
@@ -35,13 +35,13 @@ void loop()
 #include <util.h>
 #endif
 
-using namespace serial;
+using namespace serialx;
 
 using std::string;
 
 namespace {
 
-class SerialTests : public ::testing::Test {
+class SerialXTests : public ::testing::Test {
 protected:
   virtual void SetUp() {
     if (openpty(&master_fd, &slave_fd, name, NULL, NULL) == -1) {
@@ -53,7 +53,7 @@ protected:
     ASSERT_TRUE(slave_fd > 0);
     ASSERT_TRUE(string(name).length() > 0);
 
-    port1 = new Serial(string(name), 115200, Timeout::simpleTimeout(250));
+    port1 = new SerialX(string(name), 115200, Timeout::simpleTimeout(250));
   }
 
   virtual void TearDown() {
@@ -61,26 +61,26 @@ protected:
     delete port1;
   }
 
-  Serial * port1;
+  SerialX * port1;
   int master_fd;
   int slave_fd;
   char name[100];
 };
 
-TEST_F(SerialTests, readWorks) {
+TEST_F(SerialXTests, readWorks) {
   write(master_fd, "abc\n", 4);
   string r = port1->read(4);
   EXPECT_EQ(r, string("abc\n"));
 }
 
-TEST_F(SerialTests, writeWorks) {
+TEST_F(SerialXTests, writeWorks) {
   char buf[5] = "";
   port1->write("abc\n");
   read(master_fd, buf, 4);
   EXPECT_EQ(string(buf, 4), string("abc\n"));
 }
 
-TEST_F(SerialTests, timeoutWorks) {
+TEST_F(SerialXTests, timeoutWorks) {
   // Timeout a read, returns an empty string
   string empty = port1->read();
   EXPECT_EQ(empty, string(""));
@@ -91,7 +91,7 @@ TEST_F(SerialTests, timeoutWorks) {
   EXPECT_EQ(r, string("abc\n"));
 }
 
-TEST_F(SerialTests, partialRead) {
+TEST_F(SerialXTests, partialRead) {
   // Write some data, but request more than was written.
   write(master_fd, "abc\n", 4);
 

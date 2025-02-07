@@ -1,4 +1,4 @@
-all: serial
+all: serialx
 
 CMAKE_FLAGS := -DCMAKE_INSTALL_PREFIX=/tmp/usr/local
 UNAME := $(shell uname -s)
@@ -31,7 +31,7 @@ endif
 install:
 	cd build && make install
 
-serial:
+serialx:
 	@mkdir -p build
 	cd build && cmake $(CMAKE_FLAGS) ..
 ifneq ($(MAKE),)

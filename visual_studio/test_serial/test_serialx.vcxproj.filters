@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\examples\serial_example.cc">
+    <ClCompile Include="..\..\examples\serialx_example.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

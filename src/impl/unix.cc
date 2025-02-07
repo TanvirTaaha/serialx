@@ -32,7 +32,7 @@
 #include <mach/mach.h>
 #endif
 
-#include "serial/impl/unix.h"
+#include "serialx/impl/unix.h"
 
 #ifndef TIOCINQ
 #ifdef FIONREAD
@@ -49,11 +49,11 @@
 using std::string;
 using std::stringstream;
 using std::invalid_argument;
-using serial::MillisecondTimer;
-using serial::Serial;
-using serial::SerialException;
-using serial::PortNotOpenedException;
-using serial::IOException;
+using serialx::MillisecondTimer;
+using serialx::SerialX;
+using serialx::SerialXException;
+using serialx::PortNotOpenedException;
+using serialx::IOException;
 
 
 MillisecondTimer::MillisecondTimer (const uint32_t millis)
@@ -105,7 +105,7 @@ timespec_from_ms (const uint32_t millis)
   return time;
 }
 
-Serial::SerialImpl::SerialImpl (const string &port, unsigned long baudrate,
+SerialX::SerialXImpl::SerialXImpl (const string &port, unsigned long baudrate,
                                 bytesize_t bytesize,
                                 parity_t parity, stopbits_t stopbits,
                                 flowcontrol_t flowcontrol)
@@ -119,7 +119,7 @@ Serial::SerialImpl::SerialImpl (const string &port, unsigned long baudrate,
     open ();
 }
 
-Serial::SerialImpl::~SerialImpl ()
+SerialX::SerialXImpl::~SerialXImpl ()
 {
   close();
   pthread_mutex_destroy(&this->read_mutex);
@@ -127,13 +127,13 @@ Serial::SerialImpl::~SerialImpl ()
 }
 
 void
-Serial::SerialImpl::open ()
+SerialX::SerialXImpl::open ()
 {
   if (port_.empty ()) {
     throw invalid_argument ("Empty port is invalid.");
   }
   if (is_open_ == true) {
-    throw SerialException ("Serial port already open.");
+    throw SerialXException ("SerialX port already open.");
   }
 
   fd_ = ::open (port_.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -157,7 +157,7 @@ Serial::SerialImpl::open ()
 }
 
 void
-Serial::SerialImpl::reconfigurePort ()
+SerialX::SerialXImpl::reconfigurePort ()
 {
   if (fd_ == -1) {
     // Can only operate on a valid file descriptor
@@ -455,7 +455,7 @@ Serial::SerialImpl::reconfigurePort ()
 }
 
 void
-Serial::SerialImpl::close ()
+SerialX::SerialXImpl::close ()
 {
   if (is_open_ == true) {
     if (fd_ != -1) {
@@ -472,13 +472,13 @@ Serial::SerialImpl::close ()
 }
 
 bool
-Serial::SerialImpl::isOpen () const
+SerialX::SerialXImpl::isOpen () const
 {
   return is_open_;
 }
 
 size_t
-Serial::SerialImpl::available ()
+SerialX::SerialXImpl::available ()
 {
   if (!is_open_) {
     return 0;
@@ -492,7 +492,7 @@ Serial::SerialImpl::available ()
 }
 
 bool
-Serial::SerialImpl::waitReadable (uint32_t timeout)
+SerialX::SerialXImpl::waitReadable (uint32_t timeout)
 {
   // Setup a select call to block for serial data or a timeout
   fd_set readfds;
@@ -523,18 +523,18 @@ Serial::SerialImpl::waitReadable (uint32_t timeout)
 }
 
 void
-Serial::SerialImpl::waitByteTimes (size_t count)
+SerialX::SerialXImpl::waitByteTimes (size_t count)
 {
   timespec wait_time = { 0, static_cast<long>(byte_time_ns_ * count)};
   pselect (0, NULL, NULL, NULL, &wait_time, NULL);
 }
 
 size_t
-Serial::SerialImpl::read (uint8_t *buf, size_t size)
+SerialX::SerialXImpl::read (uint8_t *buf, size_t size)
 {
   // If the port is not open, throw
   if (!is_open_) {
-    throw PortNotOpenedException ("Serial::read");
+    throw PortNotOpenedException ("SerialX::read");
   }
   size_t bytes_read = 0;
 
@@ -582,7 +582,7 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
         // Disconnected devices, at least on Linux, show the
         // behavior that they are always ready to read immediately
         // but reading returns nothing.
-        throw SerialException ("device reports readiness to read but "
+        throw SerialXException ("device reports readiness to read but "
                                "returned no data (device disconnected?)");
       }
       // Update bytes_read
@@ -597,7 +597,7 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
       }
       // If bytes_read > size then we have over read, which shouldn't happen
       if (bytes_read > size) {
-        throw SerialException ("read over read, too many bytes where "
+        throw SerialXException ("read over read, too many bytes where "
                                "read, this shouldn't happen, might be "
                                "a logical error!");
       }
@@ -607,10 +607,10 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
 }
 
 size_t
-Serial::SerialImpl::write (const uint8_t *data, size_t length)
+SerialX::SerialXImpl::write (const uint8_t *data, size_t length)
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::write");
+    throw PortNotOpenedException ("SerialX::write");
   }
   fd_set writefds;
   size_t bytes_written = 0;
@@ -666,7 +666,7 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
           // Disconnected devices, at least on Linux, show the
           // behavior that they are always ready to write immediately
           // but writing returns nothing.
-          throw SerialException ("device reports readiness to write but "
+          throw SerialXException ("device reports readiness to write but "
                                  "returned no data (device disconnected?)");
         }
         // Update bytes_written
@@ -681,7 +681,7 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
         }
         // If bytes_written > size then we have over written, which shouldn't happen
         if (bytes_written > length) {
-          throw SerialException ("write over wrote, too many bytes where "
+          throw SerialXException ("write over wrote, too many bytes where "
                                  "written, this shouldn't happen, might be "
                                  "a logical error!");
         }
@@ -695,31 +695,31 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
 }
 
 void
-Serial::SerialImpl::setPort (const string &port)
+SerialX::SerialXImpl::setPort (const string &port)
 {
   port_ = port;
 }
 
 string
-Serial::SerialImpl::getPort () const
+SerialX::SerialXImpl::getPort () const
 {
   return port_;
 }
 
 void
-Serial::SerialImpl::setTimeout (serial::Timeout &timeout)
+SerialX::SerialXImpl::setTimeout (serialx::Timeout &timeout)
 {
   timeout_ = timeout;
 }
 
-serial::Timeout
-Serial::SerialImpl::getTimeout () const
+serialx::Timeout
+SerialX::SerialXImpl::getTimeout () const
 {
   return timeout_;
 }
 
 void
-Serial::SerialImpl::setBaudrate (unsigned long baudrate)
+SerialX::SerialXImpl::setBaudrate (unsigned long baudrate)
 {
   baudrate_ = baudrate;
   if (is_open_)
@@ -727,108 +727,108 @@ Serial::SerialImpl::setBaudrate (unsigned long baudrate)
 }
 
 unsigned long
-Serial::SerialImpl::getBaudrate () const
+SerialX::SerialXImpl::getBaudrate () const
 {
   return baudrate_;
 }
 
 void
-Serial::SerialImpl::setBytesize (serial::bytesize_t bytesize)
+SerialX::SerialXImpl::setBytesize (serialx::bytesize_t bytesize)
 {
   bytesize_ = bytesize;
   if (is_open_)
     reconfigurePort ();
 }
 
-serial::bytesize_t
-Serial::SerialImpl::getBytesize () const
+serialx::bytesize_t
+SerialX::SerialXImpl::getBytesize () const
 {
   return bytesize_;
 }
 
 void
-Serial::SerialImpl::setParity (serial::parity_t parity)
+SerialX::SerialXImpl::setParity (serialx::parity_t parity)
 {
   parity_ = parity;
   if (is_open_)
     reconfigurePort ();
 }
 
-serial::parity_t
-Serial::SerialImpl::getParity () const
+serialx::parity_t
+SerialX::SerialXImpl::getParity () const
 {
   return parity_;
 }
 
 void
-Serial::SerialImpl::setStopbits (serial::stopbits_t stopbits)
+SerialX::SerialXImpl::setStopbits (serialx::stopbits_t stopbits)
 {
   stopbits_ = stopbits;
   if (is_open_)
     reconfigurePort ();
 }
 
-serial::stopbits_t
-Serial::SerialImpl::getStopbits () const
+serialx::stopbits_t
+SerialX::SerialXImpl::getStopbits () const
 {
   return stopbits_;
 }
 
 void
-Serial::SerialImpl::setFlowcontrol (serial::flowcontrol_t flowcontrol)
+SerialX::SerialXImpl::setFlowcontrol (serialx::flowcontrol_t flowcontrol)
 {
   flowcontrol_ = flowcontrol;
   if (is_open_)
     reconfigurePort ();
 }
 
-serial::flowcontrol_t
-Serial::SerialImpl::getFlowcontrol () const
+serialx::flowcontrol_t
+SerialX::SerialXImpl::getFlowcontrol () const
 {
   return flowcontrol_;
 }
 
 void
-Serial::SerialImpl::flush ()
+SerialX::SerialXImpl::flush ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::flush");
+    throw PortNotOpenedException ("SerialX::flush");
   }
   tcdrain (fd_);
 }
 
 void
-Serial::SerialImpl::flushInput ()
+SerialX::SerialXImpl::flushInput ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::flushInput");
+    throw PortNotOpenedException ("SerialX::flushInput");
   }
   tcflush (fd_, TCIFLUSH);
 }
 
 void
-Serial::SerialImpl::flushOutput ()
+SerialX::SerialXImpl::flushOutput ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::flushOutput");
+    throw PortNotOpenedException ("SerialX::flushOutput");
   }
   tcflush (fd_, TCOFLUSH);
 }
 
 void
-Serial::SerialImpl::sendBreak (int duration)
+SerialX::SerialXImpl::sendBreak (int duration)
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::sendBreak");
+    throw PortNotOpenedException ("SerialX::sendBreak");
   }
   tcsendbreak (fd_, static_cast<int> (duration / 4));
 }
 
 void
-Serial::SerialImpl::setBreak (bool level)
+SerialX::SerialXImpl::setBreak (bool level)
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::setBreak");
+    throw PortNotOpenedException ("SerialX::setBreak");
   }
 
   if (level) {
@@ -836,23 +836,23 @@ Serial::SerialImpl::setBreak (bool level)
     {
         stringstream ss;
         ss << "setBreak failed on a call to ioctl(TIOCSBRK): " << errno << " " << strerror(errno);
-        throw(SerialException(ss.str().c_str()));
+        throw(SerialXException(ss.str().c_str()));
     }
   } else {
     if (-1 == ioctl (fd_, TIOCCBRK))
     {
         stringstream ss;
         ss << "setBreak failed on a call to ioctl(TIOCCBRK): " << errno << " " << strerror(errno);
-        throw(SerialException(ss.str().c_str()));
+        throw(SerialXException(ss.str().c_str()));
     }
   }
 }
 
 void
-Serial::SerialImpl::setRTS (bool level)
+SerialX::SerialXImpl::setRTS (bool level)
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::setRTS");
+    throw PortNotOpenedException ("SerialX::setRTS");
   }
 
   int command = TIOCM_RTS;
@@ -862,23 +862,23 @@ Serial::SerialImpl::setRTS (bool level)
     {
       stringstream ss;
       ss << "setRTS failed on a call to ioctl(TIOCMBIS): " << errno << " " << strerror(errno);
-      throw(SerialException(ss.str().c_str()));
+      throw(SerialXException(ss.str().c_str()));
     }
   } else {
     if (-1 == ioctl (fd_, TIOCMBIC, &command))
     {
       stringstream ss;
       ss << "setRTS failed on a call to ioctl(TIOCMBIC): " << errno << " " << strerror(errno);
-      throw(SerialException(ss.str().c_str()));
+      throw(SerialXException(ss.str().c_str()));
     }
   }
 }
 
 void
-Serial::SerialImpl::setDTR (bool level)
+SerialX::SerialXImpl::setDTR (bool level)
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::setDTR");
+    throw PortNotOpenedException ("SerialX::setDTR");
   }
 
   int command = TIOCM_DTR;
@@ -888,20 +888,20 @@ Serial::SerialImpl::setDTR (bool level)
     {
       stringstream ss;
       ss << "setDTR failed on a call to ioctl(TIOCMBIS): " << errno << " " << strerror(errno);
-      throw(SerialException(ss.str().c_str()));
+      throw(SerialXException(ss.str().c_str()));
     }
   } else {
     if (-1 == ioctl (fd_, TIOCMBIC, &command))
     {
       stringstream ss;
       ss << "setDTR failed on a call to ioctl(TIOCMBIC): " << errno << " " << strerror(errno);
-      throw(SerialException(ss.str().c_str()));
+      throw(SerialXException(ss.str().c_str()));
     }
   }
 }
 
 bool
-Serial::SerialImpl::waitForChange ()
+SerialX::SerialXImpl::waitForChange ()
 {
 #ifndef TIOCMIWAIT
 
@@ -913,7 +913,7 @@ while (is_open_ == true) {
     {
         stringstream ss;
         ss << "waitForChange failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
-        throw(SerialException(ss.str().c_str()));
+        throw(SerialXException(ss.str().c_str()));
     }
     else
     {
@@ -937,17 +937,17 @@ while (is_open_ == true) {
     stringstream ss;
     ss << "waitForDSR failed on a call to ioctl(TIOCMIWAIT): "
        << errno << " " << strerror(errno);
-    throw(SerialException(ss.str().c_str()));
+    throw(SerialXException(ss.str().c_str()));
   }
   return true;
 #endif
 }
 
 bool
-Serial::SerialImpl::getCTS ()
+SerialX::SerialXImpl::getCTS ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getCTS");
+    throw PortNotOpenedException ("SerialX::getCTS");
   }
 
   int status;
@@ -956,7 +956,7 @@ Serial::SerialImpl::getCTS ()
   {
     stringstream ss;
     ss << "getCTS failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
-    throw(SerialException(ss.str().c_str()));
+    throw(SerialXException(ss.str().c_str()));
   }
   else
   {
@@ -965,10 +965,10 @@ Serial::SerialImpl::getCTS ()
 }
 
 bool
-Serial::SerialImpl::getDSR ()
+SerialX::SerialXImpl::getDSR ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getDSR");
+    throw PortNotOpenedException ("SerialX::getDSR");
   }
 
   int status;
@@ -977,7 +977,7 @@ Serial::SerialImpl::getDSR ()
   {
       stringstream ss;
       ss << "getDSR failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
-      throw(SerialException(ss.str().c_str()));
+      throw(SerialXException(ss.str().c_str()));
   }
   else
   {
@@ -986,10 +986,10 @@ Serial::SerialImpl::getDSR ()
 }
 
 bool
-Serial::SerialImpl::getRI ()
+SerialX::SerialXImpl::getRI ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getRI");
+    throw PortNotOpenedException ("SerialX::getRI");
   }
 
   int status;
@@ -998,7 +998,7 @@ Serial::SerialImpl::getRI ()
   {
     stringstream ss;
     ss << "getRI failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
-    throw(SerialException(ss.str().c_str()));
+    throw(SerialXException(ss.str().c_str()));
   }
   else
   {
@@ -1007,10 +1007,10 @@ Serial::SerialImpl::getRI ()
 }
 
 bool
-Serial::SerialImpl::getCD ()
+SerialX::SerialXImpl::getCD ()
 {
   if (is_open_ == false) {
-    throw PortNotOpenedException ("Serial::getCD");
+    throw PortNotOpenedException ("SerialX::getCD");
   }
 
   int status;
@@ -1019,7 +1019,7 @@ Serial::SerialImpl::getCD ()
   {
     stringstream ss;
     ss << "getCD failed on a call to ioctl(TIOCMGET): " << errno << " " << strerror(errno);
-    throw(SerialException(ss.str().c_str()));
+    throw(SerialXException(ss.str().c_str()));
   }
   else
   {
@@ -1028,7 +1028,7 @@ Serial::SerialImpl::getCD ()
 }
 
 void
-Serial::SerialImpl::readLock ()
+SerialX::SerialXImpl::readLock ()
 {
   int result = pthread_mutex_lock(&this->read_mutex);
   if (result) {
@@ -1037,7 +1037,7 @@ Serial::SerialImpl::readLock ()
 }
 
 void
-Serial::SerialImpl::readUnlock ()
+SerialX::SerialXImpl::readUnlock ()
 {
   int result = pthread_mutex_unlock(&this->read_mutex);
   if (result) {
@@ -1046,7 +1046,7 @@ Serial::SerialImpl::readUnlock ()
 }
 
 void
-Serial::SerialImpl::writeLock ()
+SerialX::SerialXImpl::writeLock ()
 {
   int result = pthread_mutex_lock(&this->write_mutex);
   if (result) {
@@ -1055,7 +1055,7 @@ Serial::SerialImpl::writeLock ()
 }
 
 void
-Serial::SerialImpl::writeUnlock ()
+SerialX::SerialXImpl::writeUnlock ()
 {
   int result = pthread_mutex_unlock(&this->write_mutex);
   if (result) {

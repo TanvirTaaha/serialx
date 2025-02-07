@@ -22,9 +22,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "serial/serial.h"
+#include "serialx/serialx.h"
 
-using serial::PortInfo;
+using serialx::PortInfo;
 using std::istringstream;
 using std::ifstream;
 using std::getline;
@@ -295,7 +295,7 @@ usb_sysfs_hw_string(const string& sysfs_path)
 }
 
 vector<PortInfo>
-serial::list_ports()
+serialx::list_ports()
 {
     vector<PortInfo> results;
 
